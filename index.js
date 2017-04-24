@@ -18,8 +18,6 @@ const requireUncached = function (module) {
 }
 
 module.exports = function (mockDirectory, options = {}) {
-  const acceptContentType = options.acceptContentType ||
-    ['application/json', 'application/x-www-form-urlencoded']
   const pointToPath = {}
   const resolvePoint = (filePath) => {
     const pathToMock = path.relative(mockDirectory, filePath)
@@ -66,9 +64,6 @@ module.exports = function (mockDirectory, options = {}) {
     })
   })(mockDirectory)
 
-  console.log(chalk.cyan('Acceptable Content-Type for Mock:\n'))
-  console.log(acceptContentType)
-  console.log()
   console.log(chalk.cyan('Installing Mock files:\n'))
   console.dir(pointToPath)
   console.log()
