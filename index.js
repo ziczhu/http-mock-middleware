@@ -3,7 +3,6 @@
 const fs = require('fs')
 const path = require('path')
 const chalk = require('chalk')
-const typeis = require('type-is')
 const chokidar = require('chokidar')
 const pathToRegexp = require('path-to-regexp')
 
@@ -18,17 +17,10 @@ const requireUncached = function (module) {
   return require(module)
 }
 
-const typeChecker = function (types) {
-  return function checkType (contentType) {
-    return Boolean(typeis.is(contentType, types))
-  }
-}
-
 module.exports = function (mockDirectory, options = {}) {
   const acceptContentType = options.acceptContentType ||
     ['application/json', 'application/x-www-form-urlencoded']
   const pointToPath = {}
-  const shouldMock = typeChecker(acceptContentType)
   const resolvePoint = (filePath) => {
     const pathToMock = path.relative(mockDirectory, filePath)
     const point = '/' + pathToMock.substring(0, pathToMock.lastIndexOf('.'))
@@ -82,10 +74,6 @@ module.exports = function (mockDirectory, options = {}) {
   console.log()
 
   return function mock (req, res, next) {
-    if (!shouldMock(req.get('Content-Type'))) {
-      return next()
-    }
-
     const originalUrl = req.originalUrl
     const pathname = req.path
     let point = null
