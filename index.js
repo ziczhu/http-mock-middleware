@@ -21,7 +21,7 @@ module.exports = function (mockDirectory, options = {}) {
   const pointToPath = {}
   const resolvePoint = (filePath) => {
     const pathToMock = path.relative(mockDirectory, filePath)
-    const point = '/' + pathToMock.substring(0, pathToMock.lastIndexOf('.'))
+    const point = '/' + pathToMock.substring(0, pathToMock.lastIndexOf('.')).split(path.sep).join('/')
     return point
   }
 
