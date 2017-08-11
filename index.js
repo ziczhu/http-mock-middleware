@@ -12,9 +12,35 @@ const isFunction = (x) => {
   return Object.prototype.toString.call(x) === '[object Function]'
 }
 
-const requireUncached = function (module) {
+const requireUncached =  (module) => {
   delete require.cache[require.resolve(module)]
   return require(module)
+}
+
+const resJsonIfResNotCalled = (mockFunc) => {
+  let called = false
+  return (req, res) => {
+    const proxyRes = new Proxy(res, {
+      get(target, prop, receiver) {
+        // Hack for properties on Express 4.x
+        if (!~['app', 'headersSent', 'locals'].indexOf(prop)) {
+          const origMethod = target[prop]
+          return function(...args) {
+            called = true
+            return origMethod.apply(res, args)
+          }
+        } else {
+          return Reflect.get(target, prop, receiver)
+        }
+      }
+    })
+
+    const ret = mockFunc(req, proxyRes)
+
+    if (!called) {
+      res.json(ret)
+    }
+  }
 }
 
 module.exports = function (mockDirectory, options = {}) {
@@ -107,7 +133,7 @@ module.exports = function (mockDirectory, options = {}) {
     console.log('Request from ' + chalk.cyan(`[${req.method}] ${originalUrl}`) + ' received.\n')
 
     if (isFunction(mock)) {
-      mock(req, res, next)
+      resJsonIfResNotCalled(mock)(req, res, next)
     } else {
       var methodDefined = false
       var returned = false
@@ -126,7 +152,7 @@ module.exports = function (mockDirectory, options = {}) {
           returned = true
           mock = mock[method]
           if (isFunction(mock)) {
-            mock(req, res, next)
+            resJsonIfResNotCalled(mock)(req, res, next)
           } else {
             res.json(mock)
           }
