@@ -68,7 +68,7 @@ module.exports = function (mockDirectory, options = {}) {
   console.dir(pointToPath)
   console.log()
 
-  return function mock (req, res, next) {
+  return function mocker (req, res, next) {
     const originalUrl = req.originalUrl
     const pathname = req.path
     let point = null
@@ -106,47 +106,47 @@ module.exports = function (mockDirectory, options = {}) {
 
     console.log('Request from ' + chalk.cyan(`[${req.method}] ${originalUrl}`) + ' received.\n')
 
+    var methodDefined = false
+    var returned = false
+
     if (isFunction(mock)) {
-      mock(req, res, next)
-    } else {
-      var methodDefined = false
-      var returned = false
-      for (let method in mock) {
-        if (!method.startsWith('__')) {
-          continue
-        }
+      mock = mock(req)
+    }
 
-        var rawMethod = method.toUpperCase().slice(2)
-        if (HTTP_METHODS.indexOf(rawMethod) === -1) {
-          continue
-        }
-
-        methodDefined = true
-        if (req.method === rawMethod) {
-          returned = true
-          mock = mock[method]
-          if (isFunction(mock)) {
-            mock(req, res, next)
-          } else {
-            res.json(mock)
-          }
-          break
-        }
+    for (let method in mock) {
+      if (!method.startsWith('__')) {
+        continue
       }
 
-      if (!methodDefined) {
-        res.json(mock)
+      var rawMethod = method.toUpperCase().slice(2)
+      if (HTTP_METHODS.indexOf(rawMethod) === -1) {
+        continue
+      }
+
+      methodDefined = true
+      if (req.method === rawMethod) {
         returned = true
+        mock = mock[method]
+        if (isFunction(mock)) {
+          mock = mock(req)
+        }
+        res.json(mock)
+        break
       }
+    }
 
-      if (!returned) {
-        console.log(chalk.red(req.method) + ' method doesn\'t exist for ' +
-          chalk.cyan(originalUrl) + ', please define ' + chalk.cyan(`__${req.method}`) +
-          ' in ' + chalk.cyan(filePath) + '\n')
-        next()
-      } else {
-        console.log('Response mock data in ' + chalk.cyan(filePath) + '\n')
-      }
+    if (!methodDefined) {
+      res.json(mock)
+      returned = true
+    }
+
+    if (!returned) {
+      console.log(chalk.red(req.method) + ' method doesn\'t exist for ' +
+        chalk.cyan(originalUrl) + ', please define ' + chalk.cyan(`__${req.method}`) +
+        ' in ' + chalk.cyan(filePath) + '\n')
+      next()
+    } else {
+      console.log('Response mock data in ' + chalk.cyan(filePath) + '\n')
     }
   }
 }
