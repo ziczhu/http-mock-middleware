@@ -1,6 +1,6 @@
 {
   "name": "http-mock-middleware",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A Http Mock Middleware for Express ",
   "main": "index.js",
   "scripts": {
