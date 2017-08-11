@@ -28,10 +28,12 @@ module.exports = {
 
 // Using user-defined funciton (See more methods on req/res in [Express 4.x API](http://expressjs.com/en/4x/api.html#req))
 module.exports = function(req, res) {
-  res.json({
-    success: true,
-    msg: 'Hello, Node.js!'
-  })
+  setTimeout(() => {
+    res.json({
+      success: true,
+      msg: 'Hello, Node.js!'
+    })
+  }, 2000)
 }
 
 // Using params in url (See more details about url pattern in [path-to-regexp](https://www.npmjs.com/package/path-to-regexp))
@@ -44,7 +46,13 @@ module.exports = function(req, res) {
 }
 
 // Simplify the response, default to return JSON format
-// *Caution* Please! If you ever call any methods of res object(this second argument) in your function, the middleware will ignore the return of your function. So use plain object for return or call specific method on res object.
+// * Caution Please *
+// If you ever call any method of res object(this second argument) synchronously
+// in your function, the middleware will ignore the return of your function.
+// If you call any method of res object asynchronously but return anything except
+// null/undefined at the same time, the return value will served as the result.
+// So please use plain object for return or call specific method on res object.
+// Do not mixing them up!
 module.exports = function(req) {
   return {
     success: true,

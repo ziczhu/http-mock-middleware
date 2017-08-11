@@ -37,7 +37,7 @@ const resJsonIfResNotCalled = (mockFunc) => {
 
     const ret = mockFunc(req, proxyRes)
 
-    if (!called) {
+    if (!called && ret != null) {
       res.json(ret)
     }
   }
