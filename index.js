@@ -90,6 +90,15 @@ module.exports = function (mockDirectory, options = {}) {
     })
   })(mockDirectory)
 
+  const redirectMap = options.redirectMap
+  if (redirectMap) {
+    Object.keys(pointToPath).forEach(k => {
+      Object.keys(redirectMap).forEach(rk => {
+        pointToPath[k.replace(rk, redirectMap[rk])] = pointToPath[k]
+      })
+    })
+  }
+
   console.log(chalk.cyan('Installing Mock files:\n'))
   console.dir(pointToPath)
   console.log()
